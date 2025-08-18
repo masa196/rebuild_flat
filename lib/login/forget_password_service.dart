@@ -55,7 +55,7 @@ class CheckCodeService {
 
 class ResetPasswordService {
   static Future<String?> resetPassword(String code, String password) async {
-    final url = Uri.parse('http://192.168.1.109:8000/api/resetPassword');
+    final url = Uri.parse('${ServerConfiguration.domainNameServer}/api/resetPassword');
 
     try {
       final response = await http.post(

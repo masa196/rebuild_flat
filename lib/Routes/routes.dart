@@ -1,9 +1,16 @@
 import 'package:get/get.dart';
+import '../PreviousProjects/PreviousProjectsBinding.dart';
 import '../bottom_nav/bottom_nav.dart';
+import '../favourite/favourite_binding.dart';
+import '../favourite/favourite_page.dart';
 import '../homepage/home_page_screen.dart';
 import '../login/login_binding.dart';
 import '../login/loginscreen.dart';
 import '../logout/logout_binding.dart';
+import '../myprojects/get_projects_binding.dart';
+import '../myprojects/get_projects_screen.dart';
+import '../payments/charge_money/charge_money_page.dart';
+import '../payments/charge_money/payment_binding.dart';
 import '../profile/profile_binding.dart';
 import '../profile/profile_page.dart';
 import '../search/search_binding.dart';
@@ -27,6 +34,9 @@ class AppRoutes {
   static const String survey = '/survey';
   static const String cost = '/cost';
   static const profilepage = '/profilepage';
+  static const projectpage = '/projectpage';
+  static const payment_methode = '/payment_methode_page';
+  static const favourite = '/favourite';
 
 
   static final routes = [
@@ -68,6 +78,24 @@ class AppRoutes {
       page: () => ProfileScreen(),
       binding: ProfileBinding(),
     ),
+
+    GetPage(
+      name: projectpage,
+      page: () => MyProjectsScreen(),
+      binding: GetProjectBinding(),
+    ),
+    GetPage(
+      name: payment_methode,
+      page: () => PaymentMethodsPage(),
+      binding: PaymentsMethodsBinding(),
+    ),
+    GetPage(
+      name: favourite,
+      page: () => FavoritePage(),
+      binding: FavouriteBinding(),
+    ),
     GetPage(name: main, page: () => const BottomNav()),
+
+
   ];
 }

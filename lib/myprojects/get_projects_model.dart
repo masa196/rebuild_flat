@@ -25,13 +25,13 @@ class Project {
   final int id;
   final String companyName;
   final String projectName;
-  // final int rating;
+  int? rating; // ✅ صار قابل للتغيير (not final) وقابل أن يكون null
+
 
   Project({
     required this.id,
     required this.companyName,
     required this.projectName,
-    // required this.rating,
   });
 
   factory Project.fromJson(Map<String, dynamic> json) {

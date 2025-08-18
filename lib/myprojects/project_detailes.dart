@@ -9,6 +9,7 @@ import '../basics/app_colors.dart';
 import '../native_service/secure_storage.dart';
 import '../basics/api_url.dart';
 import '../project_stages/project_stages_screen.dart';
+import 'Rating/rating_controller.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   final int projectId;
@@ -22,6 +23,7 @@ class ProjectDetailsScreen extends StatefulWidget {
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   Map<String, dynamic>? project;
   bool isLoading = true;
+  final RatingController ratingController = Get.put(RatingController());
 
   @override
   void initState() {
@@ -102,6 +104,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            /// أضفنا هذا:
+            _buildRatingSection(),
 
             const SizedBox(height: 20),
             if (project!['file'] != null) ...[
@@ -294,6 +298,8 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             );
           }).toList(),
         ),
+
+
       ],
     );
   }
@@ -340,5 +346,220 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       ],
     );
   }
+  Widget _buildRatingSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // زر التقييم
+        SizedBox(
+          height: 40,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            icon: const Icon(Icons.star, size: 18, color: Colors.white),
+            label: const Text("قيّم المشروع", style: TextStyle(fontSize: 14, color: Colors.white)),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => _buildRatingDialog(),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(width: 12), // المسافة بين الزرين
+
+        // زر التعليق
+        SizedBox(
+          height: 40,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            icon: const Icon(Icons.comment, size: 18, color: Colors.white),
+            label: const Text("أضف تعليق", style: TextStyle(fontSize: 14, color: Colors.white)),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => _buildCommentDialog(),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _buildRatingDialog() {
+    return Dialog(
+      backgroundColor: AppColors.background_color,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+              maxWidth: 400,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                top: 16,
+                left: 16,
+                right: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "تقييم المشروع",
+                    style: TextStyle(color: AppColors.primaryColor, fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Image.asset(
+                    'assets/undraw_for-review_coua.png',
+                    height: 150,
+                  ),
+                  const SizedBox(height: 16),
+                  Obx(() {
+                    return Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          final reversedIndex = 4 - index;
+                          return IconButton(
+                            icon: Icon(
+                              Icons.star,
+                              size: 30,
+                              color: reversedIndex < ratingController.selectedRating.value
+                                  ? AppColors.primaryColor
+                                  : Colors.grey,
+                            ),
+                            onPressed: () {
+                              ratingController.selectedRating.value = 5 - index;
+                            },
+                          );
+                        }),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 16),
+                  Obx(() {
+                    return ratingController.isSubmitting.value
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
+                      onPressed: () {
+                        ratingController.submitRating(widget.projectId);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("إرسال التقييم", style: TextStyle(color: Colors.white)),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCommentDialog() {
+    return Dialog(
+      backgroundColor: AppColors.background_color,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+              maxWidth: 400,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                top: 16,
+                left: 16,
+                right: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "إضافة تعليق",
+                    style: TextStyle(color: AppColors.primaryColor, fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Image.asset(
+                    'assets/undraw_public-discussion.png',
+                    height: 150,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    maxLines: 3,
+                    onChanged: (val) => ratingController.commentText.value = val,
+                    cursorColor: AppColors.primaryColor,
+                    decoration: InputDecoration(
+                      hintText: 'اكتب تعليقك هنا...',
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.primaryColor),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Obx(() {
+                    return ratingController.isSubmitting.value
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
+                      onPressed: () {
+                        ratingController.submitComment(widget.projectId);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("إرسال التعليق", style: TextStyle(color: Colors.white)),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
 
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Routes/routes.dart';
 import '../basics/app_colors.dart';
+import '../favourite/favourite_page.dart';
 import '../logout/logout_controller.dart';
 import '../myprojects/get_projects_screen.dart';
+import '../payments/start_wallet_page.dart';
 import '../profile/profile_page.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -35,7 +37,7 @@ class CustomDrawer extends StatelessWidget {
               leading: const Icon(Icons.person),
               title: const Text('الملف الشخصي'),
               onTap: () {
-               // Get.to(ProfileScreen());
+               Get.to(ProfileScreen());
                Get.toNamed(AppRoutes.profilepage);
               },
             ),
@@ -43,8 +45,25 @@ class CustomDrawer extends StatelessWidget {
               leading: const Icon(Icons.person),
               title: const Text('مشاريعي'),
               onTap: () {
-                Get.to(MyProjectsScreen());
-                // Get.toNamed(AppRoutes.profilepage);
+                // Get.to(MyProjectsScreen());
+                Get.toNamed(AppRoutes.projectpage);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite_sharp),
+              title: const Text('المفضلة'),
+              onTap: () {
+                // Get.to(FavoritePage());
+                Get.toNamed(AppRoutes.favourite);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.wallet),
+              title: const Text('المحفظة'),
+              onTap: () {
+                Get.to( StartWalletPage());
+
+                // Get.toNamed(AppRoutes.payment_methode);
               },
             ),
             ListTile(

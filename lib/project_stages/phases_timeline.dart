@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:rebuild_flat/project_stages/project_stage_deatiles.dart';
 import 'package:rebuild_flat/project_stages/project_stage_model.dart';
 import 'package:timeline_tile/timeline_tile.dart';

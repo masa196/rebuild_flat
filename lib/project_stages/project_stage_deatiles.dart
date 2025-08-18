@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:rebuild_flat/project_stages/project_stage_model.dart';
 import '../basics/app_colors.dart';
+import 'objection/objection_controller.dart';
+import 'objection/service_objection.dart';
 
 class ProjectStageDetailScreen extends StatelessWidget {
   final ProjectStageModel stage;
@@ -12,6 +16,7 @@ class ProjectStageDetailScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final topImageHeight = screenHeight * 0.35;
     final sheetInitialSize = (screenHeight - (topImageHeight - 50)) / screenHeight;
+    final objectionController = Get.put(ObjectionController(stage.id));
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -119,9 +124,116 @@ class ProjectStageDetailScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  onPressed: () {
-                                    // تنفيذ الإجراء
+                                  onPressed: () async {
+                                    final TextEditingController objectionController = TextEditingController();
+
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        final TextEditingController objectionController = TextEditingController();
+
+                                        return Dialog(
+                                          backgroundColor: AppColors.background_color,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                          child: LayoutBuilder(
+                                            builder: (context, constraints) {
+                                              return ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                                                  minHeight: 200,
+                                                  maxWidth: 400, // يمكن تعديله حسب الحجم المطلوب
+                                                ),
+                                                child: SingleChildScrollView(
+                                                  padding: EdgeInsets.only(
+                                                    bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                                                    top: 16,
+                                                    right: 16,
+                                                    left: 16,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      const Text("إرسال اعتراض", style: TextStyle(color:AppColors.primaryColor,fontSize: 18, fontWeight: FontWeight.bold)),
+                                                      const SizedBox(height: 12),
+                                                      Image.asset(
+                                                        'assets/undraw_cancel_7zdh.png',
+                                                        height: 150,
+                                                      ),
+                                                      const SizedBox(height: 16),
+                                                      TextField(
+                                                        controller: objectionController,
+                                                        maxLines: 4,
+                                                        cursorColor: Colors.orange,
+                                                        decoration: InputDecoration(
+                                                          hintText: "اكتب اعتراضك هنا",
+                                                          focusedBorder: OutlineInputBorder(
+                                                            borderSide: const BorderSide(color: Colors.orange),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          enabledBorder: OutlineInputBorder(
+                                                            borderSide: BorderSide(color: Colors.grey.shade400),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          border: OutlineInputBorder(
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 20),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.end,
+                                                        children: [
+                                                          TextButton(
+                                                            child: const Text("إلغاء",style: TextStyle(color: AppColors.primaryColor )),
+                                                            onPressed: () => Navigator.pop(context),
+                                                          ),
+                                                          const SizedBox(width: 8),
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: AppColors.primaryColor,
+                                                            ),
+                                                            child: const Text("إرسال", style: TextStyle(color: Colors.white)),
+                                                            onPressed: () async {
+                                                              final text = objectionController.text.trim();
+                                                              if (text.isEmpty) return;
+
+                                                              Navigator.pop(context);
+
+                                                              try {
+                                                                final success = await ObjectionService.sendObjection(
+                                                                  stageId: stage.id,
+                                                                  text: text,
+                                                                );
+
+                                                                if (success) {
+                                                                  await Get.find<ObjectionController>().fetchObjections();
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    const SnackBar(content: Text('تم إرسال الاعتراض بنجاح')),
+                                                                  );
+                                                                }
+                                                              } catch (e) {
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(content: Text(e.toString())),
+                                                                );
+                                                              }
+                                                            },
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    );
+
                                   },
+
+
                                   child: const Text("اعتراض", style: TextStyle(color: Colors.white)),
                                 ),
                               ),
@@ -169,20 +281,20 @@ class ProjectStageDetailScreen extends StatelessWidget {
                                   showDialog(
                                     context: context,
                                     builder: (_) => Dialog(
-                                        backgroundColor: Colors.transparent,
+                                      backgroundColor: Colors.transparent,
 
-                                        child: InteractiveViewer(
-                                    child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      stage.images[index],
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.error, size: 40),
+                                      child: InteractiveViewer(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: Image.network(
+                                            stage.images[index],
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.error, size: 40),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  ),
-                                  ),
                                   );
                                 },
                                 child: ClipRRect(
@@ -199,6 +311,73 @@ class ProjectStageDetailScreen extends StatelessWidget {
                           )
                               : const Text("لا توجد صور لهذه المرحلة"),
                           const SizedBox(height: 20),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "الاعتراضات:",
+                            style: TextStyle(color:AppColors.primaryColor,fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+
+                          Obx(() {
+                            if (objectionController.isLoading.value) {
+                              return const Center(child: CircularProgressIndicator());
+                            } else if (objectionController.objections.isEmpty) {
+                              return const Text("لا يوجد اعتراضات حتى الآن");
+                            } else {
+                              return ListView.builder(
+                                itemCount: objectionController.objections.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final objection = objectionController.objections[index];
+                                  final formattedDate = "${objection.createdAt.day.toString().padLeft(2, '0')}"
+                                      "-${objection.createdAt.month.toString().padLeft(2, '0')}"
+                                      "-${objection.createdAt.year}";
+                                  final formattedTime = "${objection.createdAt.hour.toString().padLeft(2, '0')}"
+                                      ":${objection.createdAt.minute.toString().padLeft(2, '0')}";
+
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF9F9F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppColors.primaryColor, width: 1.5),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          objection.text,
+                                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.access_time, size: 14, color: AppColors.primaryColor),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              "$formattedDate   $formattedTime",
+                                              style: const TextStyle(fontSize: 12, color: AppColors.primaryColor),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                          })
+
+
                         ],
                       ),
                     ),

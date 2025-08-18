@@ -5,7 +5,9 @@ import '../basics/app_colors.dart';
 import 'get_projects_controller.dart';
 
 class MyProjectsScreen extends StatelessWidget {
-  final ProjectController controller = Get.put(ProjectController());
+  // final ProjectController controller = Get.put(ProjectController());
+  final controller = Get.find<ProjectController>();
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,9 +93,9 @@ class MyProjectsScreen extends StatelessWidget {
                       Row(
                         children: List.generate(5, (i) {
                           return Icon(
-                              Icons.star,
-                              // color: i < project.rating ? Colors.amber : Colors.white24,
-                              size: 22,
+                            Icons.star,
+                            color: i < (project.rating ?? 0) ? Colors.amber : Colors.white24,
+                            size: 22,
 
                           );
                         }),
