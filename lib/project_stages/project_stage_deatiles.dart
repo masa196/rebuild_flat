@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rebuild_flat/project_stages/project_stage_model.dart';
 import '../basics/app_colors.dart';
+import '../bottom_nav/bottom_nav.dart';
+import '../payments/confirm_stage/confirm_stage_service.dart';
+import 'objection/objection_controller.dart';
+import 'objection/service_objection.dart';
 
 class ProjectStageDetailScreen extends StatelessWidget {
   final ProjectStageModel stage;
@@ -12,10 +19,14 @@ class ProjectStageDetailScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final topImageHeight = screenHeight * 0.35;
     final sheetInitialSize = (screenHeight - (topImageHeight - 50)) / screenHeight;
+    final objectionController = Get.put(ObjectionController(stage.id));
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
+        backgroundColor: AppColors.background_orange,
+        bottomNavigationBar: const CustomBottomBar(currentIndex: 1),
+
         body: Stack(
           children: [
             // ✅ صورة غلاف ثابتة من الأصول
@@ -119,14 +130,122 @@ class ProjectStageDetailScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  onPressed: () {
-                                    // تنفيذ الإجراء
+                                  onPressed: () async {
+                                    final TextEditingController objectionController = TextEditingController();
+
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        final TextEditingController objectionController = TextEditingController();
+
+                                        return Dialog(
+                                          backgroundColor: AppColors.background_color,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                          child: LayoutBuilder(
+                                            builder: (context, constraints) {
+                                              return ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                                                  minHeight: 200,
+                                                  maxWidth: 400, // يمكن تعديله حسب الحجم المطلوب
+                                                ),
+                                                child: SingleChildScrollView(
+                                                  padding: EdgeInsets.only(
+                                                    bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                                                    top: 16,
+                                                    right: 16,
+                                                    left: 16,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      const Text("إرسال اعتراض", style: TextStyle(color:AppColors.primaryColor,fontSize: 18, fontWeight: FontWeight.bold)),
+                                                      const SizedBox(height: 12),
+                                                      Image.asset(
+                                                        'assets/undraw_cancel_7zdh.png',
+                                                        height: 150,
+                                                      ),
+                                                      const SizedBox(height: 16),
+                                                      TextField(
+                                                        controller: objectionController,
+                                                        maxLines: 4,
+                                                        cursorColor: Colors.orange,
+                                                        decoration: InputDecoration(
+                                                          hintText: "اكتب اعتراضك هنا",
+                                                          focusedBorder: OutlineInputBorder(
+                                                            borderSide: const BorderSide(color: Colors.orange),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          enabledBorder: OutlineInputBorder(
+                                                            borderSide: BorderSide(color: Colors.grey.shade400),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          border: OutlineInputBorder(
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 20),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.end,
+                                                        children: [
+                                                          TextButton(
+                                                            child: const Text("إلغاء",style: TextStyle(color: AppColors.primaryColor )),
+                                                            onPressed: () => Navigator.pop(context),
+                                                          ),
+                                                          const SizedBox(width: 8),
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: AppColors.primaryColor,
+                                                            ),
+                                                            child: const Text("إرسال", style: TextStyle(color: Colors.white)),
+                                                            onPressed: () async {
+                                                              final text = objectionController.text.trim();
+                                                              if (text.isEmpty) return;
+
+                                                              Navigator.pop(context);
+
+                                                              try {
+                                                                final success = await ObjectionService.sendObjection(
+                                                                  stageId: stage.id,
+                                                                  text: text,
+                                                                );
+
+                                                                if (success) {
+                                                                  await Get.find<ObjectionController>().fetchObjections();
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    const SnackBar(content: Text('تم إرسال الاعتراض بنجاح')),
+                                                                  );
+                                                                }
+                                                              } catch (e) {
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(content: Text(e.toString())),
+                                                                );
+                                                              }
+                                                            },
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    );
+
                                   },
+
+
                                   child: const Text("اعتراض", style: TextStyle(color: Colors.white)),
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Expanded(
+                              if (stage.isConfirmed == 0)
+                                Expanded(
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primaryColor,
@@ -135,12 +254,105 @@ class ProjectStageDetailScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  onPressed: () {
-                                    // تنفيذ الإجراء
+                                  onPressed: () async {
+                                    try {
+                                      // 🔄 إظهار مؤشر التحميل
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xfff77520))),
+                                      );
+
+                                      // 📨 استدعاء API الدفع
+                                      final success = await StagePaymentService.confirmStage(stage.id);
+
+                                      Navigator.pop(context); // إغلاق اللودينغ
+
+                                      if (success) {
+                                        showDialog(
+
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            backgroundColor: AppColors.background_color,
+                                            shape: RoundedRectangleBorder(
+
+                                              borderRadius: BorderRadius.circular(15),
+                                            ),
+                                            title: Row(
+                                              children: [
+                                                Icon(Icons.check_circle, color: Colors.green, size: 28),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  "نجاح العملية",
+                                                  style: GoogleFonts.cairo(fontWeight: FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Image.asset(
+                                                  'assets/img_1.png', // ضع مسار صورتك هنا
+                                                  width: 100,
+                                                  height: 100,
+                                                ),
+                                                SizedBox(height: 12),
+                                                Text(
+                                                  "تم تأكيد ودفع المرحلة بنجاح.",
+                                                  style: GoogleFonts.cairo(),
+                                                ),
+                                              ],
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context); // إغلاق الـ Dialog
+                                                  Navigator.pop(context); // رجوع لقائمة المراحل
+                                                },
+                                                child: Text(
+                                                  "موافق",
+                                                  style: GoogleFonts.cairo(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppColors.primaryColor,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+
+                                    } catch (e) {
+                                      Navigator.pop(context); // إغلاق اللودينغ
+
+                                      // ❌ Dialog خطأ
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                          title: const Row(
+                                            children: [
+                                              Icon(Icons.error, color: Colors.red, size: 28),
+                                              SizedBox(width: 8),
+                                              Text("خطأ"),
+                                            ],
+                                          ),
+                                          content: Text(e.toString()),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text("حسناً"),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
                                   },
                                   child: const Text("تأكيد", style: TextStyle(color: Colors.white)),
                                 ),
-                              ),
+                              )
+
+
                             ],
                           ),
 
@@ -169,20 +381,20 @@ class ProjectStageDetailScreen extends StatelessWidget {
                                   showDialog(
                                     context: context,
                                     builder: (_) => Dialog(
-                                        backgroundColor: Colors.transparent,
+                                      backgroundColor: Colors.transparent,
 
-                                        child: InteractiveViewer(
-                                    child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      stage.images[index],
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.error, size: 40),
+                                      child: InteractiveViewer(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: Image.network(
+                                            stage.images[index],
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.error, size: 40),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  ),
-                                  ),
                                   );
                                 },
                                 child: ClipRRect(
@@ -199,6 +411,73 @@ class ProjectStageDetailScreen extends StatelessWidget {
                           )
                               : const Text("لا توجد صور لهذه المرحلة"),
                           const SizedBox(height: 20),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "الاعتراضات:",
+                            style: TextStyle(color:AppColors.primaryColor,fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+
+                          Obx(() {
+                            if (objectionController.isLoading.value) {
+                              return const Center(child: CircularProgressIndicator(color: Color(0xfff77520)));
+                            } else if (objectionController.objections.isEmpty) {
+                              return const Text("لا يوجد اعتراضات حتى الآن");
+                            } else {
+                              return ListView.builder(
+                                itemCount: objectionController.objections.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final objection = objectionController.objections[index];
+                                  final formattedDate = "${objection.createdAt.day.toString().padLeft(2, '0')}"
+                                      "-${objection.createdAt.month.toString().padLeft(2, '0')}"
+                                      "-${objection.createdAt.year}";
+                                  final formattedTime = "${objection.createdAt.hour.toString().padLeft(2, '0')}"
+                                      ":${objection.createdAt.minute.toString().padLeft(2, '0')}";
+
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF9F9F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppColors.primaryColor, width: 1.5),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          objection.text,
+                                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.access_time, size: 14, color: AppColors.primaryColor),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              "$formattedDate   $formattedTime",
+                                              style: const TextStyle(fontSize: 12, color: AppColors.primaryColor),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                          })
+
+
                         ],
                       ),
                     ),

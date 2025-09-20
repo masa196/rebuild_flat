@@ -11,7 +11,7 @@ class Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background_color,
+      backgroundColor: AppColors.background_orange,
       body: SafeArea(
         child: Container(
           width: double.infinity,

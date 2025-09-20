@@ -41,7 +41,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background_color,
+        backgroundColor: AppColors.background_orange,
 
         body: Padding(
           padding: EdgeInsets.symmetric(
@@ -164,7 +164,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
       width: isActive ? 12 : 8,
       height: isActive ? 12 : 8,
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryColor : Colors.grey[300],
+        color: isActive ? AppColors.primaryColor : Colors.black45,
         shape: BoxShape.circle,
       ),
     );

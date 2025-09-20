@@ -11,7 +11,7 @@ class ProjectStageModel {
   final String status;
   final double cost;
   final List<String> images;
-
+  final int isConfirmed;
   ProjectStageModel({
     required this.id,
     required this.projectId,
@@ -22,6 +22,7 @@ class ProjectStageModel {
     required this.status,
     required this.cost,
     required this.images,
+    required this.isConfirmed
   });
 
   factory ProjectStageModel.fromJson(Map<String, dynamic> json) {
@@ -40,6 +41,7 @@ class ProjectStageModel {
       status: json['status'],
       cost: (json['cost'] ?? 0).toDouble(),
       images: images,
+      isConfirmed: json['is_confirmed'] ?? 0,
     );
   }
 }

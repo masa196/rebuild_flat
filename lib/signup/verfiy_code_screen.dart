@@ -68,7 +68,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
 
-        backgroundColor: AppColors.background_color,
+        backgroundColor: AppColors.background_orange,
         appBar: AppBar(
           automaticallyImplyLeading:false,
 centerTitle: true,

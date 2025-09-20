@@ -15,7 +15,7 @@ class CompanyListWidget extends StatelessWidget {
     return Obx(() {
       // عرض مؤشر تحميل عندما لا توجد بيانات بعد
       if (controller.isLoading.value && controller.companies.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator( color: Color(0xfff77520), ));
       }
 
       // ✅ الشرط الجديد: عرض رسالة إذا البحث مفعل ولا توجد نتائج

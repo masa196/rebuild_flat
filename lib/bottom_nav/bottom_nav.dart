@@ -1,42 +1,45 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
+import '../Routes/routes.dart';
+import '../basics/app_colors.dart';
+import '../payments/start_wallet_page.dart';
 
-class BottomNav extends StatelessWidget {
-  const BottomNav({super.key});
+class CustomBottomBar extends StatelessWidget {
+  final int currentIndex;
+  const CustomBottomBar({super.key, required this.currentIndex});
 
   @override
   Widget build(BuildContext context) {
-    final RxInt pageIndex = 0.obs;
-
-    final pages = [
-      //const HomePage(),
-      const Center(child: Text('مشروعي', style: TextStyle(fontSize: 24))),
-      const Center(child: Text('حسابي', style: TextStyle(fontSize: 24))),
-    ];
-
-    return Obx(() => Scaffold(
-      bottomNavigationBar: CurvedNavigationBar(
-        backgroundColor: Colors.grey[200]!,
-        color: const Color(0xfff77520),
-        buttonBackgroundColor: Colors.white,
-        height: 60,
-        animationDuration: const Duration(milliseconds: 400),
-        index: pageIndex.value,
-        items: const <Widget>[
-          Icon(Icons.home, size: 30, color: Colors.black),
-          Icon(Icons.business, size: 30, color: Colors.black),
-          Icon(Icons.person, size: 30, color: Colors.black),
-        ],
-        onTap: (index) => pageIndex.value = index,
-      ),
-      body: Stack(
-        children: [
-          Container(color: Colors.grey[200]),
-          pages[pageIndex.value],
-        ],
-      ),
-    ));
+    return ConvexAppBar(
+      backgroundColor: AppColors.primaryColor,
+      color: Colors.black,
+      activeColor: Colors.white,
+      style: TabStyle.react, // فيك تجرب TabStyle.fixed / TabStyle.reactCircle ...
+      items: const [
+        TabItem(icon: Icons.home, title: 'الرئيسية'),
+        TabItem(icon: Icons.work, title: 'مشاريعي'),
+        TabItem(icon: Icons.wallet, title: 'المحفظة'),
+      ],
+      height: 55,
+      curveSize: 65,
+      initialActiveIndex: currentIndex,
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            Get.offAllNamed(AppRoutes.home);
+            break;
+          case 1:
+            Get.offAllNamed(AppRoutes.projectpage);
+            break;
+          case 2:
+            Get.offAll(StartWalletPage());
+            break;
+        }
+      },
+    );
   }
 }

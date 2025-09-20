@@ -34,7 +34,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background_color,
+        backgroundColor: AppColors.background_orange,
         body: SafeArea(
           child: Obx(() {
             return AbsorbPointer(

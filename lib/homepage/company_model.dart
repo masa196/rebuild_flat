@@ -29,6 +29,9 @@ class Company {
   final String logo;
   final double averageRating;
   final List<Service> services;
+  final bool isFavorited; // أضفنا هذا
+  final String costOfExamination; // أضفنا هذا
+
 
   Company({
     required this.id,
@@ -39,6 +42,9 @@ class Company {
     required this.logo,
     required this.averageRating,
     required this.services,
+    required this.isFavorited,
+    required this.costOfExamination, // أضفنا هذا
+
   });
 
   factory Company.fromJson(Map<String, dynamic> json) {
@@ -49,8 +55,11 @@ class Company {
       phone: json['phone'],
       about: json['about'],
       logo: json['logo'],
-      averageRating: (json['average_rating'] as num).toDouble(),
+      averageRating: (json['average_rating'] ?? 0).toDouble(),
       services: (json['services'] as List).map((e) => Service.fromJson(e)).toList(),
+      isFavorited: json['is_favorited'], // أضفنا هذا
+      costOfExamination: json['cost_of_examination'] ?? "", // أضفنا هذا
+
     );
   }
 
@@ -63,6 +72,9 @@ class Company {
     'logo': logo,
     'average_rating': averageRating,
     'services': services.map((e) => e.toJson()).toList(),
+    'is_favorited': isFavorited,
+    'cost_of_examination': costOfExamination, // أضفنا هذا
+
   };
 }
 

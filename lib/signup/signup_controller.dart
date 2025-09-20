@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rebuild_flat/signup/signup_service.dart';
+import 'package:rebuild_flat/signup/verfiy_code_screen.dart';
 import '../Routes/routes.dart';
 import '../basics/app_colors.dart';
 import '../native_service/secure_storage.dart';
@@ -34,7 +35,8 @@ class SignUpController extends GetxController {
         final token = result['data']['token'] as String;
         await _secureStorage.save('token', token);
         print("Registration successful!");
-        Get.toNamed(AppRoutes.home);
+        // Get.toNamed(AppRoutes.home);
+        Get.to(VerifyCodeScreen());
       } else {
         _showErrorDialog(result);
       }

@@ -15,125 +15,132 @@ class SurveyPage extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('الاستبيان'),
-        backgroundColor: AppColors.primaryColor,
-      ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    final args = Get.arguments as Map<String, dynamic>;
+    final int companyId = args['companyId'] as int;
+    final List<int> serviceIds = (args['serviceIds'] as List).map((e) => e as int).toList();
 
-        return ListView.builder(
-          padding: EdgeInsets.all(width * 0.04),
-          itemCount: controller.services.length,
-          itemBuilder: (context, index) {
-            final service = controller.services[index];
-            return Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(width * 0.04),
-              ),
-              elevation: 4,
-              margin: EdgeInsets.only(bottom: height * 0.03),
-              child: ExpansionTile(
-                title: Text(
-                  service.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: width * 0.045,
-                  ),
+    return Directionality(
+      textDirection: TextDirection.rtl, // يجعل الصفحة بالكامل RTL
+      child: Scaffold(
+
+        backgroundColor: AppColors.background_orange,
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('الاستبيان'),
+          backgroundColor: AppColors.primaryColor,
+        ),
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return ListView.builder(
+            padding: EdgeInsets.all(width * 0.04),
+            itemCount: controller.services.length,
+            itemBuilder: (context, index) {
+              final service = controller.services[index];
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(width * 0.04),
                 ),
-                children: service.questions.map((q) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.03,
-                      vertical: height * 0.015,
+                elevation: 4,
+                margin: EdgeInsets.only(bottom: height * 0.03),
+                child: ExpansionTile(
+                  title: Text(
+                    service.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: width * 0.045,
                     ),
-                    child: _buildQuestion(q, width, height),
-                  );
-                }).toList(),
-              ),
-            );
-          },
-        );
-      }),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(width * 0.04),
-        child: ElevatedButton(
-          onPressed: () {
-            final costController = Get.find<CostController>();
-            final surveyController = Get.find<SurveyController>();
+                  ),
+                  children: service.questions.map((q) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: width * 0.03,
+                        vertical: height * 0.015,
+                      ),
+                      child: _buildQuestion(q, width, height),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          );
+        }),
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.all(width * 0.04),
+          child: ElevatedButton(
+            onPressed: () {
+              final costController = Get.find<CostController>();
+              final surveyController = Get.find<SurveyController>();
 
-            bool allAnswered = true;
+              bool allAnswered = true;
 
-            for (var service in surveyController.services) {
-              for (var q in service.questions) {
-                final value = surveyController.answers[q.id];
+              for (var service in surveyController.services) {
+                for (var q in service.questions) {
+                  final value = surveyController.answers[q.id];
 
-
-                if (q.hasOptions) {
-                  if (value == null || value is! int) {
-                    allAnswered = false;
-                    break;
-                  }
-                } else {
-                  if (value == null || value.toString().trim().isEmpty) {
-                    allAnswered = false;
-                    break;
+                  if (q.hasOptions) {
+                    if (value == null || value is! int) {
+                      allAnswered = false;
+                      break;
+                    }
+                  } else {
+                    if (value == null || value.toString().trim().isEmpty) {
+                      allAnswered = false;
+                      break;
+                    }
                   }
                 }
+                if (!allAnswered) break;
               }
-              if (!allAnswered) break;
-            }
 
-            if (!allAnswered) {
-              Get.snackbar(
-                "تنبيه",
-                "يرجى الإجابة على جميع الأسئلة قبل الإرسال",
-                backgroundColor: Colors.orange.shade100,
-                colorText: Colors.black87,
-                snackPosition: SnackPosition.BOTTOM,
-                duration: const Duration(seconds: 3),
-              );
-              return;
-            }
+              if (!allAnswered) {
+                Get.snackbar(
+                  "تنبيه",
+                  "يرجى الإجابة على جميع الأسئلة قبل الإرسال",
+                  backgroundColor: Colors.orange.shade100,
+                  colorText: Colors.black87,
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: const Duration(seconds: 3),
+                );
+                return;
+              }
 
+              final services = surveyController.services.map((service) {
+                final answers = service.questions.map((q) {
+                  final value = surveyController.answers[q.id];
+                  return AnswerModel(questionId: q.id, answer: value.toString());
+                }).toList();
 
-            final services = surveyController.services.map((service) {
-              final answers = service.questions.map((q) {
-                final value = surveyController.answers[q.id];
-                return AnswerModel(questionId: q.id, answer: value.toString());
+                return ServiceAnswers(serviceId: service.id, answers: answers);
               }).toList();
 
-              return ServiceAnswers(serviceId: service.id, answers: answers);
-            }).toList();
+              final request = CostRequest(services: services);
 
-            final request = CostRequest(services: services);
-
-            costController.calculateCostOnly(request).then((price) {
-              Get.toNamed('/cost', arguments: {
-                'price': price,
-                'onConfirm': () {
-                  Get.snackbar("تم", "تم تأكيد الطلب بنجاح");
-                },
+              costController.calculateCostOnly(request).then((price) {
+                Get.toNamed('/cost', arguments: {
+                  'price': price,
+                  'companyId': companyId,
+                  'onConfirm': () {
+                    Get.snackbar("تم", "تم تأكيد الطلب بنجاح");
+                  },
+                });
               });
-            });
-          },
-
-
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryColor,
-            padding: EdgeInsets.symmetric(vertical: height * 0.02),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(width * 0.035),
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              padding: EdgeInsets.symmetric(vertical: height * 0.02),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(width * 0.035),
+              ),
             ),
-          ),
-          child: Text(
-            'إرسال',
-            style: TextStyle(
-              fontSize: width * 0.045,
-              color: Colors.white,
+            child: Text(
+              'إرسال',
+              style: TextStyle(
+                fontSize: width * 0.045,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -155,6 +162,7 @@ class SurveyPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: height * 0.015),
+
             if (question.hasOptions)
               Column(
                 children: question.options.map((option) {
@@ -179,11 +187,12 @@ class SurveyPage extends StatelessWidget {
                         ),
                       ),
                       child: Row(
+                        textDirection: TextDirection.rtl,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Text(
-                              '${option.name} - ${option.unit} - ${option.price} د.ع',
+                              '${option.name} - ${option.unit} - ${option.price} ل.س',
                               style: TextStyle(
                                 fontSize: width * 0.038,
                                 fontWeight: FontWeight.w500,
@@ -204,6 +213,8 @@ class SurveyPage extends StatelessWidget {
                 onChanged: (value) {
                   controller.answers[question.id] = value;
                 },
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
                 decoration: InputDecoration(
                   hintText: 'اكتب إجابتك هنا',
                   filled: true,
@@ -214,7 +225,11 @@ class SurveyPage extends StatelessWidget {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(width * 0.035),
-                    borderSide: const BorderSide(color:AppColors.primaryColor),
+                    borderSide: BorderSide(color: AppColors.primaryColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(width * 0.035),
+                    borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
                   ),
                 ),
               ),

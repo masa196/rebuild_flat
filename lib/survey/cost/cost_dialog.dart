@@ -1,96 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../../basics/api_url.dart';
 import '../../basics/app_colors.dart';
 import '../../native_service/secure_storage.dart';
-
+import '../../payments/order_request/map.dart';
+import '../../payments/order_request/order_service.dart';
+import '../survey_controller.dart';
 
 class CostDialog extends StatelessWidget {
   const CostDialog({super.key});
-
-  // Future<void> startPayment({
-  //   required String token,
-  //   required int companyId,
-  //   required double amount,
-  //   required Function(String paymentIntentId) onSuccess,
-  // }) async {
-  //   try {
-  //     final res = await http.post(
-  //       Uri.parse('${ServerConfiguration.domainNameServer}/api/payment/create-payment-intent'),
-  //       headers: {
-  //         'Authorization': 'Bearer $token',
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: jsonEncode({'company_id': companyId}),
-  //     );
-  //
-  //     if (res.statusCode == 200) {
-  //       final data = jsonDecode(res.body);
-  //       final clientSecret = data['client_secret'];
-  //       final paymentIntentId = data['payment_intent_id'];
-  //
-  //       await Stripe.instance.initPaymentSheet(
-  //         paymentSheetParameters: SetupPaymentSheetParameters(
-  //           paymentIntentClientSecret: clientSecret,
-  //           merchantDisplayName: "Crafty App",
-  //           style: ThemeMode.light,
-  //         ),
-  //       );
-  //
-  //       await Stripe.instance.presentPaymentSheet();
-  //
-  //       // إذا ما صار خطأ، معناها الدفع نجح
-  //       onSuccess(paymentIntentId);
-  //     } else {
-  //       Get.snackbar("فشل", "فشل في إنشاء عملية الدفع");
-  //     }
-  //   } catch (e) {
-  //     if (e is StripeException) {
-  //       Get.snackbar("تم الإلغاء", e.error.message ?? "أُلغيت العملية");
-  //     } else {
-  //       Get.snackbar("خطأ", e.toString());
-  //     }
-  //   }
-  // }
-  //
-  // Future<void> sendOrder({
-  //   required String token,
-  //   required String paymentIntentId,
-  //   required int budget,
-  //   required String location,
-  //   required List<Map<String, dynamic>> answers,
-  // }) async {
-  //   final res = await http.post(
-  //     Uri.parse('${ServerConfiguration.domainNameServer}/api/Add_Order'),
-  //     headers: {
-  //       'Authorization': 'Bearer $token',
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: jsonEncode({
-  //       "company_id": 1,
-  //       "location": location,
-  //       "budget": budget,
-  //       "answers": answers,
-  //       "payment_intent_id": paymentIntentId,
-  //     }),
-  //   );
-  //
-  //   final data = jsonDecode(res.body);
-  //   if (data['status'] == true) {
-  //     Get.snackbar("نجاح", "تم تقديم الطلب بنجاح ✅");
-  //     Get.back();
-  //   } else {
-  //     Get.snackbar("فشل", data['message']);
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
     final double price = Get.arguments['price'];
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
+    final args = Get.arguments as Map<String, dynamic>;
+    final int companyId = args['companyId'];
 
     return Scaffold(
       body: Stack(
@@ -125,7 +50,8 @@ class CostDialog extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.home_work_rounded, size: width * 0.18, color: const Color(0xFFF77520)),
+                    Icon(Icons.home_work_rounded,
+                        size: width * 0.18, color: const Color(0xFFF77520)),
                     const SizedBox(height: 16),
                     Text(
                       "تكلفة مشروعك التقديرية",
@@ -169,7 +95,8 @@ class CostDialog extends StatelessWidget {
                               ),
                             ),
                             child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: height * 0.015),
+                              padding:
+                              EdgeInsets.symmetric(vertical: height * 0.015),
                               child: Text(
                                 "إلغاء",
                                 style: TextStyle(
@@ -192,28 +119,42 @@ class CostDialog extends StatelessWidget {
                                 return;
                               }
 
-                              // startPayment(
-                              //   token: token,
-                              //   companyId: 1,
-                              //   amount: price,
-                              //   onSuccess: (paymentIntentId) {
-                              //     sendOrder(
-                              //       token: token,
-                              //       paymentIntentId: paymentIntentId,
-                              //       budget: price.toInt(),
-                              //       location: "دمشق، المزة",
-                              //       answers: [
-                              //         // TODO: عدلي هذه القائمة حسب استجابات الاستبيان
-                              //         {"question_service_id": 4, "answer": "1"},
-                              //         {"question_service_id": 5, "answer": "500"},
-                              //         {"question_service_id": 6, "answer": "لا"},
-                              //         {"question_service_id": 7, "answer": "2"},
-                              //         {"question_service_id": 8, "answer": "15"},
-                              //         {"question_service_id": 9, "answer": "نعم"},
-                              //       ],
-                              //     );
-                              //   },
-                              // );
+                              // 👇 روح على صفحة الخريطة وخلي المستخدم يختار موقعه
+                              final selectedPoint =
+                              await Get.to(() => const MapPage());
+
+                              if (selectedPoint == null) {
+                                Get.snackbar("خطأ", "يجب اختيار موقع على الخريطة");
+                                return;
+                              }
+
+                              final surveyController =
+                              Get.find<SurveyController>();
+                              final orderController =
+                              Get.put(OrderController(OrderService()));
+
+                              // تجهيز الأجوبة
+                              final answers = surveyController.services
+                                  .expand((service) =>
+                                  service.questions.map((q) {
+                                    final value =
+                                    surveyController.answers[q.id];
+                                    return OrderAnswer(
+                                      questionServiceId: q.id,
+                                      answer: value.toString(),
+                                    );
+                                  }))
+                                  .toList();
+
+                              // ✅ أرسل الإحداثيات مع الطلب
+                              final request = OrderRequest(
+                                companyId: companyId,
+                                latitude: selectedPoint.latitude,
+                                longitude: selectedPoint.longitude,
+                                answers: answers,
+                              );
+
+                              await orderController.createOrder(request);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryColor,
@@ -222,7 +163,8 @@ class CostDialog extends StatelessWidget {
                               ),
                             ),
                             child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: height * 0.015),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: height * 0.015),
                               child: Text(
                                 "تأكيد الطلب والدفع",
                                 style: TextStyle(

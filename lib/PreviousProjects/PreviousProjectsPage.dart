@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../PreviousProjects/PreviousProjectsModel.dart';
 import '../basics/api_url.dart';
 import '../basics/app_colors.dart';
@@ -8,17 +9,16 @@ class PreviousProjectsPage extends StatelessWidget {
   final PreviousProjectsModel project;
 
   const PreviousProjectsPage({super.key, required this.project});
-
   static const String baseImageUrl =
-      '${ServerConfiguration.domainNameServer}/storage/companies-logo/';
-
+      '${ServerConfiguration.domainNameServer}/storage/';
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(project.projectName),
+          title: Text(project.projectName, style: GoogleFonts.tajawal(fontWeight: FontWeight.bold,
+            fontSize: 18,)),
           backgroundColor:AppColors.primaryColor,
         ),
         body: ListView(

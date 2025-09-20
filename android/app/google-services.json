@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "514294949355",
+    "project_id": "rebuildapp-f8417",
+    "storage_bucket": "rebuildapp-f8417.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514294949355:android:5c780ea08eca4a38c1a5ae",
+        "android_client_info": {
+          "package_name": "com.example.rebuild_flat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASIz5GyawD1BdW8s68keGPi2lKFjmsjrE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

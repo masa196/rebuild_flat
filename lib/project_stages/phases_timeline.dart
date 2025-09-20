@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:rebuild_flat/project_stages/project_stage_deatiles.dart';
 import 'package:rebuild_flat/project_stages/project_stage_model.dart';
 import 'package:timeline_tile/timeline_tile.dart';
+
+import '../basics/app_colors.dart';
 
 class TimelineStageItem extends StatelessWidget {
   final ProjectStageModel stage;
@@ -64,7 +67,8 @@ class TimelineStageItem extends StatelessWidget {
         indicator: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: AppColors.background_orange,
+
             border: Border.all(
               color: isFinished ? Colors.green : iconColor,
               width: 3,

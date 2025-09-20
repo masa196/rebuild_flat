@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rebuild_flat/profile/profile_model.dart';
 import 'profile_service.dart';
@@ -51,7 +52,7 @@ class ProfileController extends GetxController {
 
       await loadProfile();
 
-      Get.snackbar('تم التعديل', 'تم تحديث الملف الشخصي بنجاح');
+      Get.snackbar('تم التعديل', 'تم تحديث الملف الشخصي بنجاح',backgroundColor: Colors.orange.shade100);
     } catch (e) {
       Get.snackbar('خطأ', e.toString());
     } finally {

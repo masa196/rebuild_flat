@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child:  Scaffold(
-          backgroundColor: AppColors.background_color,
+        backgroundColor: AppColors.background_orange,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -191,29 +191,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 35),
 
-                  const Text(
-                    'أو يمكنك التسجيل عبر',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 15),
-                  GestureDetector(
-                    onTap: () {
+                  // const Text(
+                  //   'أو يمكنك التسجيل عبر',
+                  //   style: TextStyle(fontSize: 14, color: Colors.black54),
+                  // ),
+                  // const SizedBox(height: 15),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //
+                  //   },
+                  //   child: Container(
+                  //     padding: const EdgeInsets.all(10),
+                  //     decoration: BoxDecoration(
+                  //       border: Border.all(color: Colors.grey.shade300),
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //     child: Image.asset(
+                  //       'assets/google_logo.png',
+                  //       height: 40,
+                  //     ),
+                  //   ),
+                  // ),
 
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Image.asset(
-                        'assets/google_logo.png',
-                        height: 40,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
                 ],
               ),
             ),

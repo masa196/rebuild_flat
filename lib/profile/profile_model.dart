@@ -7,6 +7,7 @@ class UserModel {
   final int age;
   final String gender;
   final List<String> role;
+  final double balance; // أضفنا الحقل الجديد
 
   UserModel({
     required this.id,
@@ -17,6 +18,7 @@ class UserModel {
     required this.age,
     required this.gender,
     required this.role,
+    required this.balance, // أضفنا الحقل هنا
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,9 +28,10 @@ class UserModel {
       email: json['email'],
       phone: json['phone'],
       image: json['image'],
-      age: json['age'],
+      age: int.tryParse(json['age'].toString()) ?? 0,
       gender: json['gender'],
       role: List<String>.from(json['role']),
+      balance: double.tryParse(json['balance'].toString()) ?? 0.0, // قراءة الرصيد
     );
   }
 
@@ -41,6 +44,7 @@ class UserModel {
     int? age,
     String? gender,
     List<String>? role,
+    double? balance,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -51,6 +55,7 @@ class UserModel {
       age: age ?? this.age,
       gender: gender ?? this.gender,
       role: role ?? this.role,
+      balance: balance ?? this.balance,
     );
   }
 }

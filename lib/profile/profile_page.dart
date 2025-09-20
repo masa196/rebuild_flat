@@ -43,12 +43,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background_color,
+        backgroundColor: AppColors.background_orange,
         resizeToAvoidBottomInset: true,
 
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: Color(0xfff77520)));
           }
 
           final user = controller.user.value;
@@ -150,6 +150,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 divider(),
 
                 buildEditableInfoRow(
+                  icon: Icons.account_balance_wallet,
+                  label: 'الرصيد',
+                  value: "${user?.balance.toStringAsFixed(2) ?? '0.00'} ل.س",
+                  width: width,
+                  editable: false,
+                ),
+                divider(),
+
+
+                buildEditableInfoRow(
                   icon: Icons.phone,
                   label: 'رقم الهاتف',
                   value: user?.phone ?? '',
@@ -223,6 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
+
                     controller: currentController,
                     obscureText: true,
                     decoration: const InputDecoration(labelText: 'كلمة السر الحالية',

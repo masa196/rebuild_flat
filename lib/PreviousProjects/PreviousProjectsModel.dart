@@ -1,9 +1,46 @@
+class CompanyModel {
+  final int id;
+  final String name;
+  final String about;
+  final String location;
+  final String logo;
+  final bool isFavorited;
+  final String costOfExamination;
+  final List<PreviousProjectsModel> projects;
+
+  CompanyModel({
+    required this.id,
+    required this.name,
+    required this.about,
+    required this.location,
+    required this.logo,
+    required this.isFavorited,
+    required this.costOfExamination,
+    required this.projects,
+  });
+
+  factory CompanyModel.fromJson(Map<String, dynamic> json) {
+    return CompanyModel(
+      id: json['id'],
+      name: json['name'],
+      about: json['about'],
+      location: json['location'],
+      logo: json['logo'],
+      isFavorited: json['is_favorited'],
+      costOfExamination: json['cost_of_examination'],
+      projects: (json['projects'] as List)
+          .map((proj) => PreviousProjectsModel.fromJson(proj))
+          .toList(),
+    );
+  }
+}
+
 class PreviousProjectsModel {
   final int id;
   final String projectName;
   final String status;
   final String startDate;
-  final String endDate;
+  final String? endDate;
   final int finalCost;
   final String description;
   final List<ProjectImage> projectImages;
@@ -14,7 +51,7 @@ class PreviousProjectsModel {
     required this.id,
     required this.projectName,
     required this.startDate,
-    required this.endDate,
+    this.endDate,
     required this.status,
     required this.description,
     required this.finalCost,
